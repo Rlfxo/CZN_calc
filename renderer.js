@@ -3,6 +3,7 @@ let deck = [];
 let nextCardId = 1;
 let transformationCost = 10; // 변환 비용
 let currentSavingSlot = null; // 현재 저장 중인 슬롯 번호
+let totalDuplicateCount = 0; // 덱 전체의 복제 횟수
 
 // 복제/제거 비용 계산 함수 (0-indexed: 0회차=0pt, 1회차=10pt, 2회차=30pt, 3회차=50pt, 4회차 이상=70pt)
 function getDuplicateRemovalCost(count) {
@@ -43,10 +44,11 @@ function getCardTypeCost(type) {
 }
 
 // 옵션 비용
-function getOptionCost(option) {
+function getOptionCost(option, isInitialCard) {
     switch(option) {
         case 'spark':
-            return 10;
+            // 기본 카드(4장) 또는 최초 고유 카드(4장)만 번뜩임이 0pt
+            return isInitialCard ? 0 : 10;
         case 'divine':
             return 20;
         default:
@@ -66,15 +68,16 @@ function calculateCardCost(card) {
     // 카드 타입 기본 비용
     cost += getCardTypeCost(card.type);
 
-    // 복제 비용
-    if (card.duplicateCount > 0) {
-        for (let i = 0; i < card.duplicateCount; i++) {
-            cost += getDuplicateRemovalCost(i);
-        }
+    // 복제 비용 (duplicateCost 필드 사용)
+    if (card.duplicateCost !== undefined) {
+        cost += card.duplicateCost;
     }
 
+    // 초기 카드 여부 동적 계산 (기본 카드 4장 + ID가 가장 낮은 고유 카드 4장)
+    const isInitialCard = checkIfInitialCard(card);
+
     // 옵션 비용
-    cost += getOptionCost(card.option);
+    cost += getOptionCost(card.option, isInitialCard);
 
     // 변환 비용
     if (card.isTransformed) {
@@ -82,6 +85,23 @@ function calculateCardCost(card) {
     }
 
     return cost;
+}
+
+// 초기 카드인지 확인하는 함수
+function checkIfInitialCard(card) {
+    // 기본 카드는 항상 초기 카드
+    if (card.type === 'basic') {
+        return true;
+    }
+
+    // 고유 카드의 경우, ID가 가장 낮은 4장만 초기 카드
+    if (card.type === 'unique') {
+        const uniqueCards = deck.filter(c => c.type === 'unique').sort((a, b) => a.id - b.id);
+        const initialUniqueCards = uniqueCards.slice(0, 4);
+        return initialUniqueCards.some(c => c.id === card.id);
+    }
+
+    return false;
 }
 
 // 총 세이브 포인트 계산
@@ -286,6 +306,9 @@ function duplicateCard(cardId) {
     const sourceCard = deck.find(c => c.id === cardId);
     if (!sourceCard) return;
 
+    // 덱 전체의 복제 비용 계산 (현재 복제 횟수 기준)
+    const duplicateCost = getDuplicateRemovalCost(totalDuplicateCount);
+
     const duplicatedCard = {
         id: nextCardId++,
         name: sourceCard.name + ' 복제됨',
@@ -297,11 +320,17 @@ function duplicateCard(cardId) {
         isRemoved: false,
         isTransformed: false,
         removalCost: 0,
+        duplicateCost: duplicateCost, // 복제 비용 저장
         cost: 0
     };
 
+    // 복제된 카드의 비용 계산
     duplicatedCard.cost = calculateCardCost(duplicatedCard);
     deck.push(duplicatedCard);
+
+    // 덱 전체의 복제 횟수 증가
+    totalDuplicateCount++;
+
     updateUI();
 }
 
@@ -352,7 +381,20 @@ function recalculateAllRemovalCosts() {
 
 // 카드 삭제
 function deleteCard(cardId) {
-    deck = deck.filter(card => card.id !== cardId);
+    const cardToDelete = deck.find(card => card.id === cardId);
+
+    // 복제된 카드인 경우 (duplicateCost가 있는 경우) 전역 복제 카운트 감소 및 재계산
+    if (cardToDelete && cardToDelete.duplicateCost !== undefined && cardToDelete.duplicateCost > 0) {
+        totalDuplicateCount = Math.max(0, totalDuplicateCount - 1);
+
+        // 삭제할 카드를 제외하고 덱 업데이트
+        deck = deck.filter(card => card.id !== cardId);
+
+        // 모든 복제된 카드들의 비용 재계산
+        recalculateDuplicateCosts();
+    } else {
+        deck = deck.filter(card => card.id !== cardId);
+    }
 
     // 제거된 카드들의 비용 재계산
     recalculateAllRemovalCosts();
@@ -360,10 +402,28 @@ function deleteCard(cardId) {
     updateUI();
 }
 
+// 모든 복제된 카드들의 비용 재계산
+function recalculateDuplicateCosts() {
+    // 복제된 카드들만 필터링 (duplicateCost가 정의되고 0 이상인 카드)
+    const duplicatedCards = deck.filter(c => c.duplicateCost !== undefined);
+
+    // 복제 순서대로 정렬 (id 기준 - 먼저 생성된 카드가 먼저)
+    duplicatedCards.sort((a, b) => a.id - b.id);
+
+    // 각 복제 카드의 비용을 순서대로 재계산
+    let duplicateIndex = 0;
+    duplicatedCards.forEach(card => {
+        card.duplicateCost = getDuplicateRemovalCost(duplicateIndex);
+        card.cost = calculateCardCost(card);
+        duplicateIndex++;
+    });
+}
+
 // 초기 덱 생성 (기본 카드만)
 function initializeDeck() {
     deck = [];
     nextCardId = 1;
+    totalDuplicateCount = 0;
 
     // 기본 카드 4장 (일반 3장, 희귀 1장)
     for (let i = 0; i < 3; i++) {
@@ -517,6 +577,7 @@ function clearDeck() {
     if (confirm('정말로 덱을 초기화하시겠습니까?')) {
         deck = [];
         nextCardId = 1;
+        totalDuplicateCount = 0;
         updateUI();
         restoreFocus();
     }
@@ -527,6 +588,7 @@ function saveDeck() {
     const deckData = {
         deck: deck,
         nextCardId: nextCardId,
+        totalDuplicateCount: totalDuplicateCount,
         tier: parseInt(document.getElementById('dungeonTier').value),
         nightmareMode: document.getElementById('nightmareMode').checked,
         capacityAdjustment: parseInt(document.getElementById('capacityAdjustment').value) || 0
@@ -566,6 +628,7 @@ function confirmSlotName() {
     const deckData = {
         deck: deck,
         nextCardId: nextCardId,
+        totalDuplicateCount: totalDuplicateCount,
         tier: parseInt(document.getElementById('dungeonTier').value),
         nightmareMode: document.getElementById('nightmareMode').checked,
         capacityAdjustment: parseInt(document.getElementById('capacityAdjustment').value) || 0,
@@ -614,6 +677,7 @@ function loadFromSlot(slotNumber) {
     const deckData = JSON.parse(savedData);
     deck = deckData.deck;
     nextCardId = deckData.nextCardId;
+    totalDuplicateCount = deckData.totalDuplicateCount || 0;
 
     // 기존 데이터 호환성
     deck.forEach(card => {
@@ -622,6 +686,9 @@ function loadFromSlot(slotNumber) {
         }
         if (card.isTransformed === undefined) {
             card.isTransformed = false;
+        }
+        if (card.duplicateCost === undefined) {
+            card.duplicateCost = 0;
         }
         card.cost = calculateCardCost(card);
     });
@@ -680,6 +747,7 @@ function loadDeck() {
     const deckData = JSON.parse(savedData);
     deck = deckData.deck;
     nextCardId = deckData.nextCardId;
+    totalDuplicateCount = deckData.totalDuplicateCount || 0;
 
     // 기존 데이터 호환성: removalCost와 isTransformed가 없는 카드에 추가
     deck.forEach(card => {
@@ -688,6 +756,9 @@ function loadDeck() {
         }
         if (card.isTransformed === undefined) {
             card.isTransformed = false;
+        }
+        if (card.duplicateCost === undefined) {
+            card.duplicateCost = 0;
         }
         // 모든 카드의 비용 재계산
         card.cost = calculateCardCost(card);
