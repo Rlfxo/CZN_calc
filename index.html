@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaos Zero Nightmare Save Data Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Chaos Zero Nightmare Save Data Calculator</h1>
+                    <p class="subtitle">from 카제나 채널</p>
+                </div>
+                <button id="exitBtn" class="btn-exit">종료</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 카오스 티어 선택 -->
+            <section class="tier-section">
+                <h2>카오스 티어</h2>
+                <div class="tier-input">
+                    <label for="dungeonTier">티어 선택:</label>
+                    <input type="number" id="dungeonTier" min="1" max="20" value="1">
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="nightmareMode">
+                        나이트메어 (+1 티어)
+                    </label>
+
+                    <div class="adjustment-input">
+                        <label for="capacityAdjustment">보정치:</label>
+                        <input type="number" id="capacityAdjustment" value="0" placeholder="0">
+                        <span>pt</span>
+                    </div>
+
+                    <span class="capacity-display">저장 용량: <strong id="storageCapacity">30</strong> pt</span>
+                </div>
+            </section>
+
+            <!-- 카드 추가 섹션 (좌우 분할) -->
+            <div class="card-sections-container">
+                <!-- 고유 카드 추가 섹션 -->
+                <section class="add-card-section half-width">
+                    <h2>고유 카드 추가</h2>
+                    <div class="card-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="uniqueCardName">카드 이름:</label>
+                                <input type="text" id="uniqueCardName" placeholder="카드 이름 입력">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="uniqueCardRarity">등급:</label>
+                                <select id="uniqueCardRarity">
+                                    <option value="common">일반 (흰색)</option>
+                                    <option value="rare">희귀 (하늘색)</option>
+                                    <option value="legendary">전설 (노랑색)</option>
+                                    <option value="mythic">신화 (보라색)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="addUniqueCardBtn" class="btn-primary">고유 카드 추가</button>
+                    </div>
+                </section>
+
+                <!-- 일반 카드 추가 섹션 -->
+                <section class="add-card-section half-width">
+                    <h2>일반 카드 추가</h2>
+                    <div class="card-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="normalCardName">카드 이름:</label>
+                                <input type="text" id="normalCardName" placeholder="카드 이름 입력">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="normalCardType">카드 타입:</label>
+                                <select id="normalCardType">
+                                    <option value="neutral">중립 카드 (+20pt)</option>
+                                    <option value="forbidden">금기 카드 (+20pt)</option>
+                                    <option value="monster">몬스터 카드 (+80pt)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="addNormalCardBtn" class="btn-primary">일반 카드 추가</button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 세이브 포인트 표시 -->
+            <section class="save-point-section">
+                <div class="save-point-display">
+                    <h2>세이브 포인트</h2>
+                    <div class="point-info">
+                        <span id="currentPoints" class="current-points">0</span>
+                        <span class="separator">/</span>
+                        <span id="maxPoints" class="max-points">30</span>
+                        <span class="unit">pt</span>
+                    </div>
+                    <div id="warningMessage" class="warning-message hidden">⚠️ 저장 용량 초과!</div>
+                </div>
+            </section>
+
+            <!-- 현재 덱 리스트 -->
+            <section class="deck-section">
+                <h2>현재 덱</h2>
+                <div class="deck-actions">
+                    <button id="initDeckBtn" class="btn-success">초기 덱 생성</button>
+                    <button id="clearDeckBtn" class="btn-danger">덱 초기화</button>
+                    <button id="saveDeckBtn" class="btn-info">덱 저장</button>
+                    <button id="loadDeckBtn" class="btn-info">덱 불러오기</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="deckTable">
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>카드 이름</th>
+                                <th>등급</th>
+                                <th>타입</th>
+                                <th>옵션</th>
+                                <th>비용 (pt)</th>
+                                <th>기록</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deckTableBody">
+                            <!-- 카드 리스트가 여기에 추가됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

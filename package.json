@@ -1,0 +1,21 @@
+{
+  "name": "czn-calc",
+  "version": "1.0.0",
+  "description": "CZN 덱 세이브 포인트 계산기",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": [
+    "electron",
+    "tcg",
+    "calculator",
+    "deck"
+  ],
+  "author": "Gilbert",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
