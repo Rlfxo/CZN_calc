@@ -107,14 +107,71 @@
                 </div>
             </section>
 
+            <!-- 슬롯 이름 입력 모달 -->
+            <div id="slotNameModal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>슬롯 이름 입력</h3>
+                    <input type="text" id="slotNameInput" placeholder="예: 티어7 기본 덱">
+                    <div class="modal-buttons">
+                        <button class="btn-primary" onclick="confirmSlotName()">저장</button>
+                        <button class="btn-danger" onclick="cancelSlotName()">취소</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 현재 덱 리스트 -->
             <section class="deck-section">
                 <h2>현재 덱</h2>
                 <div class="deck-actions">
                     <button id="initDeckBtn" class="btn-success">초기 덱 생성</button>
                     <button id="clearDeckBtn" class="btn-danger">덱 초기화</button>
-                    <button id="saveDeckBtn" class="btn-info">덱 저장</button>
-                    <button id="loadDeckBtn" class="btn-info">덱 불러오기</button>
+                </div>
+
+                <!-- 슬롯 저장/불러오기 -->
+                <div class="slot-section">
+                    <h3>덱 슬롯</h3>
+                    <div class="slots-container">
+                        <div class="slot-item" data-slot="1">
+                            <div class="slot-header">슬롯 1</div>
+                            <div class="slot-info">비어있음</div>
+                            <div class="slot-buttons">
+                                <button class="btn-slot-save" onclick="saveToSlot(1)">저장</button>
+                                <button class="btn-slot-load" onclick="loadFromSlot(1)">불러오기</button>
+                            </div>
+                        </div>
+                        <div class="slot-item" data-slot="2">
+                            <div class="slot-header">슬롯 2</div>
+                            <div class="slot-info">비어있음</div>
+                            <div class="slot-buttons">
+                                <button class="btn-slot-save" onclick="saveToSlot(2)">저장</button>
+                                <button class="btn-slot-load" onclick="loadFromSlot(2)">불러오기</button>
+                            </div>
+                        </div>
+                        <div class="slot-item" data-slot="3">
+                            <div class="slot-header">슬롯 3</div>
+                            <div class="slot-info">비어있음</div>
+                            <div class="slot-buttons">
+                                <button class="btn-slot-save" onclick="saveToSlot(3)">저장</button>
+                                <button class="btn-slot-load" onclick="loadFromSlot(3)">불러오기</button>
+                            </div>
+                        </div>
+                        <div class="slot-item" data-slot="4">
+                            <div class="slot-header">슬롯 4</div>
+                            <div class="slot-info">비어있음</div>
+                            <div class="slot-buttons">
+                                <button class="btn-slot-save" onclick="saveToSlot(4)">저장</button>
+                                <button class="btn-slot-load" onclick="loadFromSlot(4)">불러오기</button>
+                            </div>
+                        </div>
+                        <div class="slot-item" data-slot="5">
+                            <div class="slot-header">슬롯 5</div>
+                            <div class="slot-info">비어있음</div>
+                            <div class="slot-buttons">
+                                <button class="btn-slot-save" onclick="saveToSlot(5)">저장</button>
+                                <button class="btn-slot-load" onclick="loadFromSlot(5)">불러오기</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="table-container">

@@ -23,6 +23,17 @@ function createWindow() {
   ipcMain.on('quit-app', () => {
     app.quit();
   });
+
+  // 포커스 재설정 요청 처리
+  ipcMain.on('restore-focus', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.blur();
+      setTimeout(() => {
+        mainWindow.focus();
+        mainWindow.webContents.focus();
+      }, 100);
+    }
+  });
 }
 
 app.whenReady().then(() => {
