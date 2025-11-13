@@ -110,7 +110,12 @@ function updateUI() {
 // 덱 테이블 렌더링
 function renderDeckTable() {
     const tbody = document.getElementById('deckTableBody');
-    tbody.innerHTML = '';
+
+    // 기존 이벤트 리스너 제거를 위해 새로운 요소로 교체
+    const newTbody = tbody.cloneNode(false);
+    tbody.parentNode.replaceChild(newTbody, tbody);
+
+    const updatedTbody = document.getElementById('deckTableBody');
 
     deck.forEach((card, index) => {
         const row = document.createElement('tr');
@@ -132,7 +137,7 @@ function renderDeckTable() {
 
         row.innerHTML = `
             <td>${index + 1}</td>
-            <td class="editable-name" data-card-id="${card.id}">${card.name}</td>
+            <td class="editable-name" data-card-id="${card.id}" data-edit="true">${card.name}</td>
             <td class="rarity-${card.rarity}">${getRarityText(card.rarity)}</td>
             <td>${getTypeText(card.type)}</td>
             <td class="option-checkboxes">
@@ -153,16 +158,21 @@ function renderDeckTable() {
                 <button class="btn-delete" onclick="deleteCard(${card.id})">삭제</button>
             </td>
         `;
-        tbody.appendChild(row);
+
+        updatedTbody.appendChild(row);
     });
 
-    // 더블클릭 이벤트 리스너 추가
-    document.querySelectorAll('.editable-name').forEach(el => {
-        el.addEventListener('dblclick', function() {
-            const cardId = parseInt(this.getAttribute('data-card-id'));
-            editCardName(cardId, this);
-        });
-    });
+    // 이벤트 위임으로 더블클릭 처리
+    updatedTbody.addEventListener('dblclick', handleTableDblClick);
+}
+
+// 테이블 더블클릭 이벤트 핸들러
+function handleTableDblClick(e) {
+    const nameCell = e.target.closest('[data-edit="true"]');
+    if (nameCell) {
+        const cardId = parseInt(nameCell.getAttribute('data-card-id'));
+        editCardName(cardId, nameCell);
+    }
 }
 
 // 텍스트 변환 함수들
@@ -201,31 +211,55 @@ function editCardName(cardId, element) {
     const card = deck.find(c => c.id === cardId);
     if (!card) return;
 
+    // 이미 편집 중이면 무시
+    const existingInput = element.querySelector('input');
+    if (existingInput) {
+        existingInput.focus();
+        return;
+    }
+
     const currentName = card.name;
     const input = document.createElement('input');
     input.type = 'text';
     input.value = currentName;
     input.className = 'edit-name-input';
 
-    element.textContent = '';
+    element.innerHTML = '';
     element.appendChild(input);
-    input.focus();
-    input.select();
+
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 0);
+
+    let isSaved = false;
 
     const saveName = () => {
+        if (isSaved) return;
+        isSaved = true;
+
         const newName = input.value.trim();
-        if (newName && newName !== currentName) {
+        if (newName) {
             card.name = newName;
         }
         updateUI();
     };
 
-    input.addEventListener('blur', saveName);
-    input.addEventListener('keypress', (e) => {
+    const handleKeydown = (e) => {
         if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
             saveName();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            isSaved = true;
+            updateUI();
         }
-    });
+    };
+
+    input.addEventListener('blur', saveName);
+    input.addEventListener('keydown', handleKeydown);
 }
 
 // 카드 옵션 업데이트
@@ -493,6 +527,8 @@ function loadDeck() {
         if (card.isTransformed === undefined) {
             card.isTransformed = false;
         }
+        // 모든 카드의 비용 재계산
+        card.cost = calculateCardCost(card);
     });
 
     // 제거된 카드들의 비용 재계산

@@ -458,11 +458,14 @@ tbody tr:last-child td {
 
 .edit-name-input {
     width: 100%;
-    padding: 4px 8px;
+    padding: 8px 12px;
     font-size: 1em;
     border: 2px solid #667eea;
     border-radius: 4px;
     outline: none;
+    box-sizing: border-box;
+    background-color: #fff;
+    z-index: 100;
 }
 
 /* 옵션 체크박스 */
