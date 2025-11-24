@@ -9,6 +9,11 @@
 > **Inspired by 카제나 채널**
 > 바이브 코딩으로 만든 실전형 덱 계산기
 
+# 공식에서 기능을 지원하기로 공지 됨 (업데이트 종료)
+<img width="975" height="484" alt="스크린샷 2025-11-24 오후 2 11 57" src="https://github.com/user-attachments/assets/ad770754-fd19-4078-8e22-043cdad4e686" />
+
+<img width="967" height="742" alt="스크린샷 2025-11-24 오후 2 09 39" src="https://github.com/user-attachments/assets/19e1c24d-9acd-409a-a4cf-66f443e0dde7" />
+
 ---
 
 ## 목차
